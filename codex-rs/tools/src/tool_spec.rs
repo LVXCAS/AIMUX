@@ -90,6 +90,35 @@ pub fn create_tools_json_for_responses_api(
     Ok(tools_json)
 }
 
+/// Returns JSON values that are compatible with Function Calling in the
+/// OpenAI Chat Completions API:
+/// https://platform.openai.com/docs/guides/function-calling?api-mode=chat
+///
+/// Only `ToolSpec::Function` is meaningful for chat completions; the Responses-only
+/// tool variants (`Namespace`, `ToolSearch`, `ImageGeneration`, `WebSearch`,
+/// `Freeform`) have no chat-completions equivalent and are skipped.
+pub fn create_tools_json_for_chat_api(
+    tools: &[ToolSpec],
+) -> Result<Vec<Value>, serde_json::Error> {
+    let mut tools_json = Vec::new();
+
+    for tool in tools {
+        if let ToolSpec::Function(tool) = tool {
+            let json = serde_json::json!({
+                "type": "function",
+                "function": {
+                    "name": tool.name,
+                    "description": tool.description,
+                    "parameters": serde_json::to_value(&tool.parameters)?,
+                },
+            });
+            tools_json.push(json);
+        }
+    }
+
+    Ok(tools_json)
+}
+
 #[derive(Debug, Clone, Serialize, PartialEq)]
 pub struct ResponsesApiWebSearchFilters {
     #[serde(skip_serializing_if = "Option::is_none")]

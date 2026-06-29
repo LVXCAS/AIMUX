@@ -47,7 +47,6 @@ pub const AMAZON_BEDROCK_DEFAULT_BASE_URL: &str =
     "https://bedrock-mantle.us-east-1.api.aws/openai/v1";
 const AMAZON_BEDROCK_MANTLE_CLIENT_AGENT_HEADER: &str = "x-amzn-mantle-client-agent";
 const AMAZON_BEDROCK_MANTLE_CLIENT_AGENT_VALUE: &str = "codex";
-const CHAT_WIRE_API_REMOVED_ERROR: &str = "`wire_api = \"chat\"` is no longer supported.\nHow to fix: set `wire_api = \"responses\"` in your provider config.\nMore info: https://github.com/openai/codex/discussions/7782";
 pub const LEGACY_OLLAMA_CHAT_PROVIDER_ID: &str = "ollama-chat";
 pub const OLLAMA_CHAT_PROVIDER_REMOVED_ERROR: &str = "`ollama-chat` is no longer supported.\nHow to fix: replace `ollama-chat` with `ollama` in `model_provider`, `oss_provider`, or `--local-provider`.\nMore info: https://github.com/openai/codex/discussions/7782";
 
@@ -58,12 +57,16 @@ pub enum WireApi {
     /// The Responses API exposed by OpenAI at `/v1/responses`.
     #[default]
     Responses,
+    /// The Chat Completions API exposed by OpenAI-compatible providers at
+    /// `/v1/chat/completions`.
+    Chat,
 }
 
 impl fmt::Display for WireApi {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let value = match self {
             Self::Responses => "responses",
+            Self::Chat => "chat",
         };
         f.write_str(value)
     }
@@ -77,8 +80,11 @@ impl<'de> Deserialize<'de> for WireApi {
         let value = String::deserialize(deserializer)?;
         match value.as_str() {
             "responses" => Ok(Self::Responses),
-            "chat" => Err(serde::de::Error::custom(CHAT_WIRE_API_REMOVED_ERROR)),
-            _ => Err(serde::de::Error::unknown_variant(&value, &["responses"])),
+            "chat" => Ok(Self::Chat),
+            _ => Err(serde::de::Error::unknown_variant(
+                &value,
+                &["responses", "chat"],
+            )),
         }
     }
 }
@@ -425,6 +431,43 @@ pub const DEFAULT_OLLAMA_PORT: u16 = 11434;
 pub const LMSTUDIO_OSS_PROVIDER_ID: &str = "lmstudio";
 pub const OLLAMA_OSS_PROVIDER_ID: &str = "ollama";
 
+pub const ANTHROPIC_PROVIDER_ID: &str = "anthropic";
+pub const ANTHROPIC_BASE_URL: &str = "https://api.anthropic.com/v1";
+pub const ANTHROPIC_ENV_KEY: &str = "ANTHROPIC_API_KEY";
+
+pub const GEMINI_PROVIDER_ID: &str = "gemini";
+pub const GEMINI_BASE_URL: &str = "https://generativelanguage.googleapis.com/v1beta/openai";
+pub const GEMINI_ENV_KEY: &str = "GEMINI_API_KEY";
+
+pub const MISTRAL_PROVIDER_ID: &str = "mistral";
+pub const MISTRAL_BASE_URL: &str = "https://api.mistral.ai/v1";
+pub const MISTRAL_ENV_KEY: &str = "MISTRAL_API_KEY";
+
+/// Builds a built-in OpenAI-chat-compatible provider (Anthropic/Gemini/Mistral)
+/// that speaks `WireApi::Chat` and authenticates via a bearer token sourced from
+/// `env_key`.
+fn create_chat_provider(name: &str, base_url: &str, env_key: &str) -> ModelProviderInfo {
+    ModelProviderInfo {
+        name: name.into(),
+        base_url: Some(base_url.into()),
+        env_key: Some(env_key.into()),
+        env_key_instructions: None,
+        experimental_bearer_token: None,
+        auth: None,
+        aws: None,
+        wire_api: WireApi::Chat,
+        query_params: None,
+        http_headers: None,
+        env_http_headers: None,
+        request_max_retries: None,
+        stream_max_retries: None,
+        stream_idle_timeout_ms: None,
+        websocket_connect_timeout_ms: None,
+        requires_openai_auth: false,
+        supports_websockets: false,
+    }
+}
+
 /// Built-in default provider list.
 pub fn built_in_model_providers(
     openai_base_url: Option<String>,
@@ -447,6 +490,18 @@ pub fn built_in_model_providers(
         (
             LMSTUDIO_OSS_PROVIDER_ID,
             create_oss_provider(DEFAULT_LMSTUDIO_PORT, WireApi::Responses),
+        ),
+        (
+            ANTHROPIC_PROVIDER_ID,
+            create_chat_provider("Anthropic", ANTHROPIC_BASE_URL, ANTHROPIC_ENV_KEY),
+        ),
+        (
+            GEMINI_PROVIDER_ID,
+            create_chat_provider("Gemini", GEMINI_BASE_URL, GEMINI_ENV_KEY),
+        ),
+        (
+            MISTRAL_PROVIDER_ID,
+            create_chat_provider("Mistral", MISTRAL_BASE_URL, MISTRAL_ENV_KEY),
         ),
     ]
     .into_iter()
