@@ -837,7 +837,9 @@ fn persist_agent_identity_record(
 
 pub const OPENAI_API_KEY_ENV_VAR: &str = "OPENAI_API_KEY";
 pub const CODEX_API_KEY_ENV_VAR: &str = "CODEX_API_KEY";
+pub const AIMUX_API_KEY_ENV_VAR: &str = "AIMUX_API_KEY";
 pub const CODEX_ACCESS_TOKEN_ENV_VAR: &str = "CODEX_ACCESS_TOKEN";
+pub const AIMUX_ACCESS_TOKEN_ENV_VAR: &str = "AIMUX_ACCESS_TOKEN";
 
 pub fn read_openai_api_key_from_env() -> Option<String> {
     env::var(OPENAI_API_KEY_ENV_VAR)
@@ -846,12 +848,18 @@ pub fn read_openai_api_key_from_env() -> Option<String> {
         .filter(|value| !value.is_empty())
 }
 
+/// Read the API key from env. Checks `AIMUX_API_KEY` first, then falls back
+/// to the legacy `CODEX_API_KEY` for backwards compatibility.
 pub fn read_codex_api_key_from_env() -> Option<String> {
-    read_non_empty_env_var(CODEX_API_KEY_ENV_VAR)
+    read_non_empty_env_var(AIMUX_API_KEY_ENV_VAR)
+        .or_else(|| read_non_empty_env_var(CODEX_API_KEY_ENV_VAR))
 }
 
+/// Read the access token from env. Checks `AIMUX_ACCESS_TOKEN` first, then
+/// falls back to the legacy `CODEX_ACCESS_TOKEN` for backwards compatibility.
 pub fn read_codex_access_token_from_env() -> Option<String> {
-    read_non_empty_env_var(CODEX_ACCESS_TOKEN_ENV_VAR)
+    read_non_empty_env_var(AIMUX_ACCESS_TOKEN_ENV_VAR)
+        .or_else(|| read_non_empty_env_var(CODEX_ACCESS_TOKEN_ENV_VAR))
 }
 
 fn read_non_empty_env_var(key: &str) -> Option<String> {

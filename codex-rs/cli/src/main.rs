@@ -88,7 +88,7 @@ use codex_protocol::protocol::AskForApproval;
 use codex_protocol::user_input::UserInput;
 use codex_terminal_detection::TerminalName;
 
-/// Codex CLI
+/// AIMUX CLI
 ///
 /// If no subcommand is specified, options will be forwarded to the interactive CLI.
 #[derive(Debug, Parser)]
@@ -98,10 +98,10 @@ use codex_terminal_detection::TerminalName;
     // If a sub‑command is given, ignore requirements of the default args.
     subcommand_negates_reqs = true,
     // The executable is sometimes invoked via a platform‑specific name like
-    // `codex-x86_64-unknown-linux-musl`, but the help output should always use
-    // the generic `codex` command name that users run.
-    bin_name = "codex",
-    override_usage = "codex [OPTIONS] [PROMPT]\n       codex [OPTIONS] <COMMAND> [ARGS]"
+    // `aimux-x86_64-unknown-linux-musl`, but the help output should always use
+    // the generic `aimux` command name that users run.
+    bin_name = "aimux",
+    override_usage = "aimux [OPTIONS] [PROMPT]\n       aimux [OPTIONS] <COMMAND> [ARGS]"
 )]
 struct MultitoolCli {
     #[clap(flatten)]
@@ -122,7 +122,7 @@ struct MultitoolCli {
 
 #[derive(Debug, clap::Subcommand)]
 enum Subcommand {
-    /// Run Codex non-interactively.
+    /// Run AIMUX non-interactively.
     #[clap(visible_alias = "e")]
     Exec(ExecCli),
 
@@ -135,13 +135,13 @@ enum Subcommand {
     /// Remove stored authentication credentials.
     Logout(LogoutCommand),
 
-    /// Manage external MCP servers for Codex.
+    /// Manage external MCP servers for AIMUX.
     Mcp(McpCli),
 
-    /// Manage Codex plugins.
+    /// Manage AIMUX plugins.
     Plugin(PluginCli),
 
-    /// Start Codex as an MCP server (stdio).
+    /// Start AIMUX as an MCP server (stdio).
     McpServer(McpServerCommand),
 
     /// [experimental] Run the app server or related tooling.
@@ -150,20 +150,20 @@ enum Subcommand {
     /// [experimental] Manage the app-server daemon with remote control enabled.
     RemoteControl(RemoteControlCommand),
 
-    /// Launch the Codex desktop app (opens the app installer if missing).
+    /// Launch the AIMUX desktop app (opens the app installer if missing).
     #[cfg(any(target_os = "macos", target_os = "windows"))]
     App(app_cmd::AppCommand),
 
     /// Generate shell completion scripts.
     Completion(CompletionCommand),
 
-    /// Update Codex to the latest version.
+    /// Update AIMUX to the latest version.
     Update,
 
-    /// Diagnose local Codex installation, config, auth, and runtime health.
+    /// Diagnose local AIMUX installation, config, auth, and runtime health.
     Doctor(DoctorCommand),
 
-    /// Run commands within a Codex-provided sandbox.
+    /// Run commands within an AIMUX-provided sandbox.
     Sandbox(HostSandboxArgs),
 
     /// Debugging tools.
@@ -173,7 +173,7 @@ enum Subcommand {
     #[clap(hide = true)]
     Execpolicy(ExecpolicyCommand),
 
-    /// Apply the latest diff produced by Codex agent as a `git apply` to your local working tree.
+    /// Apply the latest diff produced by AIMUX agent as a `git apply` to your local working tree.
     #[clap(visible_alias = "a")]
     Apply(ApplyCommand),
 
@@ -282,7 +282,7 @@ struct DebugModelsCommand {
 
 #[derive(Debug, Parser)]
 struct ReviewCommand {
-    /// Error out when config.toml contains fields that are not recognized by this version of Codex.
+    /// Error out when config.toml contains fields that are not recognized by this version of AIMUX.
     #[arg(long = "strict-config", default_value_t = false)]
     strict_config: bool,
 
@@ -292,7 +292,7 @@ struct ReviewCommand {
 
 #[derive(Debug, Parser)]
 struct McpServerCommand {
-    /// Error out when config.toml contains fields that are not recognized by this version of Codex.
+    /// Error out when config.toml contains fields that are not recognized by this version of AIMUX.
     #[arg(long = "strict-config", default_value_t = false)]
     strict_config: bool,
 }
@@ -352,7 +352,7 @@ struct SessionArchiveConfigOverrides {
     #[clap(flatten)]
     shared: SharedCliOptions,
 
-    /// Error out when config.toml contains fields that are not recognized by this version of Codex.
+    /// Error out when config.toml contains fields that are not recognized by this version of AIMUX.
     #[arg(long = "strict-config", default_value_t = false)]
     strict_config: bool,
 
@@ -463,13 +463,13 @@ struct LoginCommand {
 
     #[arg(
         long = "with-api-key",
-        help = "Read the API key from stdin (e.g. `printenv OPENAI_API_KEY | codex login --with-api-key`)"
+        help = "Read the API key from stdin (e.g. `printenv OPENAI_API_KEY | aimux login --with-api-key`)"
     )]
     with_api_key: bool,
 
     #[arg(
         long = "with-access-token",
-        help = "Read the access token from stdin (e.g. `printenv CODEX_ACCESS_TOKEN | codex login --with-access-token`)"
+        help = "Read the access token from stdin (e.g. `printenv AIMUX_ACCESS_TOKEN | aimux login --with-access-token`)"
     )]
     with_access_token: bool,
 
@@ -517,7 +517,7 @@ struct AppServerCommand {
     #[command(subcommand)]
     subcommand: Option<AppServerSubcommand>,
 
-    /// Error out when config.toml contains fields that are not recognized by this version of Codex.
+    /// Error out when config.toml contains fields that are not recognized by this version of AIMUX.
     #[arg(long = "strict-config", default_value_t = false)]
     strict_config: bool,
 
@@ -562,7 +562,7 @@ struct AppServerCommand {
 
 #[derive(Debug, Parser)]
 struct ExecServerCommand {
-    /// Error out when config.toml contains fields that are not recognized by this version of Codex.
+    /// Error out when config.toml contains fields that are not recognized by this version of AIMUX.
     #[arg(long = "strict-config", default_value_t = false)]
     strict_config: bool,
 
@@ -582,7 +582,7 @@ struct ExecServerCommand {
     #[arg(long = "name", value_name = "NAME")]
     name: Option<String>,
 
-    /// Use Agent Identity auth from CODEX_ACCESS_TOKEN for remote registration.
+    /// Use Agent Identity auth from AIMUX_ACCESS_TOKEN (or CODEX_ACCESS_TOKEN) for remote registration.
     #[arg(long = "use-agent-identity-auth", requires = "remote")]
     use_agent_identity_auth: bool,
 }
@@ -757,7 +757,7 @@ fn handle_app_exit(exit_info: AppExitInfo) -> anyhow::Result<()> {
 fn run_update_action(action: UpdateAction) -> anyhow::Result<()> {
     println!();
     let cmd_str = action.command_str();
-    println!("Updating Codex via `{cmd_str}`...");
+    println!("Updating AIMUX via `{cmd_str}`...");
 
     let status = {
         #[cfg(windows)]
@@ -792,7 +792,7 @@ fn run_update_action(action: UpdateAction) -> anyhow::Result<()> {
     if !status.success() {
         anyhow::bail!("`{cmd_str}` failed with status {status}");
     }
-    println!("\n🎉 Update ran successfully! Please restart Codex.");
+    println!("\n🎉 Update ran successfully! Please restart AIMUX.");
     Ok(())
 }
 
@@ -800,7 +800,7 @@ fn run_update_command() -> anyhow::Result<()> {
     #[cfg(debug_assertions)]
     {
         anyhow::bail!(
-            "`codex update` is not available in debug builds. Install a release build of Codex to use this command."
+            "`aimux update` is not available in debug builds. Install a release build of AIMUX to use this command."
         );
     }
 
@@ -808,7 +808,7 @@ fn run_update_command() -> anyhow::Result<()> {
     {
         let Some(action) = codex_tui::get_update_action() else {
             anyhow::bail!(
-                "Could not detect the Codex installation method. Please update manually: https://developers.openai.com/codex/cli/"
+                "Could not detect the AIMUX installation method. Please update manually."
             );
         };
         run_update_action(action)
@@ -1024,7 +1024,7 @@ async fn cli_main(
                 root_remote_auth_token_env.as_deref(),
                 "review",
             )?;
-            let mut exec_cli = ExecCli::try_parse_from(["codex", "exec"])?;
+            let mut exec_cli = ExecCli::try_parse_from(["aimux", "exec"])?;
             exec_cli
                 .shared
                 .inherit_exec_root_options(&interactive.shared);
@@ -1365,7 +1365,7 @@ async fn cli_main(
                         .await;
                     } else if login_cli.api_key.is_some() {
                         eprintln!(
-                            "The --api-key flag is no longer supported. Pipe the key instead, e.g. `printenv OPENAI_API_KEY | codex login --with-api-key`."
+                            "The --api-key flag is no longer supported. Pipe the key instead, e.g. `printenv OPENAI_API_KEY | aimux login --with-api-key`."
                         );
                         std::process::exit(1);
                     } else if login_cli.with_api_key {
@@ -1484,7 +1484,7 @@ async fn cli_main(
             #[cfg(not(any(target_os = "macos", target_os = "linux", target_os = "windows")))]
             {
                 let _ = loader_overrides;
-                anyhow::bail!("`codex sandbox` is not supported on this operating system");
+                anyhow::bail!("`aimux sandbox` is not supported on this operating system");
             }
         }
         Some(Subcommand::Debug(DebugCommand { subcommand })) => match subcommand {
@@ -1669,7 +1669,7 @@ fn profile_v2_for_subcommand<'a>(
             subcommand: DebugSubcommand::PromptInput(_),
         }) => Ok(Some(profile_v2)),
         _ => anyhow::bail!(
-            "--profile only applies to runtime commands and `codex mcp`: `codex`, `codex exec`, `codex review`, `codex resume`, `codex archive`, `codex delete`, `codex unarchive`, `codex fork`, `codex mcp`, `codex sandbox`, and `codex debug prompt-input`."
+            "--profile only applies to runtime commands and `aimux mcp`: `aimux`, `aimux exec`, `aimux review`, `aimux resume`, `aimux archive`, `aimux delete`, `aimux unarchive`, `aimux fork`, `aimux mcp`, `aimux sandbox`, and `aimux debug prompt-input`."
         ),
     }
 }
@@ -1683,7 +1683,7 @@ async fn run_exec_server_command(
     let codex_self_exe = arg0_paths
         .codex_self_exe
         .clone()
-        .ok_or_else(|| anyhow::anyhow!("Codex executable path is not configured"))?;
+        .ok_or_else(|| anyhow::anyhow!("AIMUX executable path is not configured"))?;
     let runtime_paths = codex_exec_server::ExecServerRuntimePaths::new(
         codex_self_exe,
         arg0_paths.codex_linux_sandbox_exe.clone(),
@@ -1751,7 +1751,7 @@ async fn load_exec_server_remote_auth_provider(
 
     let auth = load_exec_server_remote_auth(
         config,
-        "remote exec-server registration requires ChatGPT authentication or API key authentication; run `codex login` or set CODEX_API_KEY",
+        "remote exec-server registration requires ChatGPT authentication or API key authentication; run `aimux login` or set AIMUX_API_KEY (or CODEX_API_KEY)",
     )
     .await?;
 
@@ -2060,12 +2060,12 @@ fn reject_remote_mode_for_subcommand(
 ) -> anyhow::Result<()> {
     if let Some(remote) = remote {
         anyhow::bail!(
-            "`--remote {remote}` is only supported for interactive TUI commands, not `codex {subcommand}`"
+            "`--remote {remote}` is only supported for interactive TUI commands, not `aimux {subcommand}`"
         );
     }
     if remote_auth_token_env.is_some() {
         anyhow::bail!(
-            "`--remote-auth-token-env` is only supported for interactive TUI commands, not `codex {subcommand}`"
+            "`--remote-auth-token-env` is only supported for interactive TUI commands, not `aimux {subcommand}`"
         );
     }
     Ok(())
@@ -2156,7 +2156,7 @@ fn reject_strict_config_for_unsupported_subcommand(
     subcommand: &str,
 ) -> anyhow::Result<()> {
     if strict_config {
-        anyhow::bail!("`--strict-config` is not supported for `codex {subcommand}`");
+        anyhow::bail!("`--strict-config` is not supported for `aimux {subcommand}`");
     }
     Ok(())
 }
@@ -2250,7 +2250,7 @@ async fn run_interactive_tui(
         }
 
         eprintln!(
-            "WARNING: TERM is set to \"dumb\". Codex's interactive TUI may not work in this terminal."
+            "WARNING: TERM is set to \"dumb\". AIMUX's interactive TUI may not work in this terminal."
         );
         if !confirm("Continue anyway? [y/N]: ")? {
             return Ok(AppExitInfo::fatal(
@@ -2302,7 +2302,7 @@ async fn run_interactive_tui(
             Err(backup_err) => {
                 local_state_db::print_diagnostic_guidance(startup_error);
                 return Ok(AppExitInfo::fatal(format!(
-                    "failed to move damaged Codex local database files into a backup folder automatically: {backup_err}"
+                    "failed to move damaged AIMUX local database files into a backup folder automatically: {backup_err}"
                 )));
             }
         }
@@ -2486,7 +2486,7 @@ fn merge_interactive_cli_flags(interactive: &mut TuiCli, subcommand_cli: TuiCli)
 
 fn print_completion(cmd: CompletionCommand) {
     let mut app = MultitoolCli::command();
-    let name = "codex";
+    let name = "aimux";
     generate(cmd.shell, &mut app, name, &mut std::io::stdout());
 }
 
@@ -2654,31 +2654,31 @@ mod tests {
 
     #[test]
     fn profile_v2_is_rejected_for_config_management_subcommands() {
-        assert!(profile_v2_for_args(&["codex", "--profile", "work", "features", "list"]).is_err());
+        assert!(profile_v2_for_args(&["aimux", "--profile", "work", "features", "list"]).is_err());
     }
 
     #[test]
     fn profile_v2_is_allowed_for_runtime_subcommands() {
         assert_eq!(
-            profile_v2_for_args(&["codex", "--profile", "work", "resume"])
+            profile_v2_for_args(&["aimux", "--profile", "work", "resume"])
                 .expect("resume supports profile-v2")
                 .as_deref(),
             Some("work")
         );
         assert_eq!(
-            profile_v2_for_args(&["codex", "--profile", "work", "debug", "prompt-input"])
+            profile_v2_for_args(&["aimux", "--profile", "work", "debug", "prompt-input"])
                 .expect("debug prompt-input supports profile-v2")
                 .as_deref(),
             Some("work")
         );
         assert_eq!(
-            profile_v2_for_args(&["codex", "--profile", "work", "mcp", "list"])
+            profile_v2_for_args(&["aimux", "--profile", "work", "mcp", "list"])
                 .expect("mcp supports profile-v2")
                 .as_deref(),
             Some("work")
         );
         assert_eq!(
-            profile_v2_for_args(&["codex", "--profile", "work", "sandbox"])
+            profile_v2_for_args(&["aimux", "--profile", "work", "sandbox"])
                 .expect("sandbox supports config profile")
                 .as_deref(),
             Some("work")
@@ -2687,7 +2687,7 @@ mod tests {
 
     #[test]
     fn import_remains_an_interactive_prompt() {
-        let cli = MultitoolCli::try_parse_from(["codex", "import"]).expect("parse");
+        let cli = MultitoolCli::try_parse_from(["aimux", "import"]).expect("parse");
 
         assert!(cli.subcommand.is_none());
         assert_eq!(cli.interactive.prompt.as_deref(), Some("import"));
@@ -2696,14 +2696,14 @@ mod tests {
     #[test]
     fn profile_v2_rejects_non_plain_names_at_parse_time() {
         assert!(
-            MultitoolCli::try_parse_from(["codex", "--profile", "nested/work", "resume"]).is_err()
+            MultitoolCli::try_parse_from(["aimux", "--profile", "nested/work", "resume"]).is_err()
         );
     }
 
     #[test]
     fn exec_resume_last_accepts_prompt_positional() {
         let cli =
-            MultitoolCli::try_parse_from(["codex", "exec", "--json", "resume", "--last", "2+2"])
+            MultitoolCli::try_parse_from(["aimux", "exec", "--json", "resume", "--last", "2+2"])
                 .expect("parse should succeed");
 
         let Some(Subcommand::Exec(exec)) = cli.subcommand else {
@@ -2721,7 +2721,7 @@ mod tests {
     #[test]
     fn exec_resume_accepts_output_flags_after_subcommand() {
         let cli = MultitoolCli::try_parse_from([
-            "codex",
+            "aimux",
             "exec",
             "resume",
             "session-123",
@@ -2755,7 +2755,7 @@ mod tests {
     #[test]
     fn dangerous_bypass_conflicts_with_approval_policy() {
         let err = MultitoolCli::try_parse_from([
-            "codex",
+            "aimux",
             "--dangerously-bypass-approvals-and-sandbox",
             "--ask-for-approval",
             "on-request",
@@ -2782,7 +2782,7 @@ mod tests {
     #[test]
     fn debug_prompt_input_parses_prompt_and_images() {
         let cli = MultitoolCli::try_parse_from([
-            "codex",
+            "aimux",
             "debug",
             "prompt-input",
             "hello",
@@ -2808,7 +2808,7 @@ mod tests {
     #[test]
     fn debug_models_parses_bundled_flag() {
         let cli =
-            MultitoolCli::try_parse_from(["codex", "debug", "models", "--bundled"]).expect("parse");
+            MultitoolCli::try_parse_from(["aimux", "debug", "models", "--bundled"]).expect("parse");
 
         let Some(Subcommand::Debug(DebugCommand {
             subcommand: DebugSubcommand::Models(cmd),
@@ -2838,19 +2838,19 @@ mod tests {
 
     #[test]
     fn plugin_marketplace_help_uses_plugin_namespace() {
-        let help = help_from_args(&["codex", "plugin", "marketplace", "--help"]);
+        let help = help_from_args(&["aimux", "plugin", "marketplace", "--help"]);
         assert!(
-            help.contains("Usage: codex plugin marketplace [OPTIONS] <COMMAND>"),
+            help.contains("Usage: aimux plugin marketplace [OPTIONS] <COMMAND>"),
             "{help}"
         );
 
         for (subcommand, usage) in [
-            ("add", "Usage: codex plugin marketplace add"),
-            ("list", "Usage: codex plugin marketplace list"),
-            ("upgrade", "Usage: codex plugin marketplace upgrade"),
-            ("remove", "Usage: codex plugin marketplace remove"),
+            ("add", "Usage: aimux plugin marketplace add"),
+            ("list", "Usage: aimux plugin marketplace list"),
+            ("upgrade", "Usage: aimux plugin marketplace upgrade"),
+            ("remove", "Usage: aimux plugin marketplace remove"),
         ] {
-            let help = help_from_args(&["codex", "plugin", "marketplace", subcommand, "--help"]);
+            let help = help_from_args(&["aimux", "plugin", "marketplace", subcommand, "--help"]);
             assert!(help.contains(usage), "{help}");
         }
     }
@@ -2858,7 +2858,7 @@ mod tests {
     #[test]
     fn plugin_marketplace_add_parses_under_plugin() {
         let cli =
-            MultitoolCli::try_parse_from(["codex", "plugin", "marketplace", "add", "owner/repo"])
+            MultitoolCli::try_parse_from(["aimux", "plugin", "marketplace", "add", "owner/repo"])
                 .expect("parse");
 
         assert!(matches!(cli.subcommand, Some(Subcommand::Plugin(_))));
@@ -2867,7 +2867,7 @@ mod tests {
     #[test]
     fn plugin_marketplace_upgrade_parses_under_plugin() {
         let cli =
-            MultitoolCli::try_parse_from(["codex", "plugin", "marketplace", "upgrade", "debug"])
+            MultitoolCli::try_parse_from(["aimux", "plugin", "marketplace", "upgrade", "debug"])
                 .expect("parse");
 
         assert!(matches!(cli.subcommand, Some(Subcommand::Plugin(_))));
@@ -2876,7 +2876,7 @@ mod tests {
     #[test]
     fn plugin_add_parses_under_plugin() {
         let cli = MultitoolCli::try_parse_from([
-            "codex",
+            "aimux",
             "plugin",
             "add",
             "sample",
@@ -2891,7 +2891,7 @@ mod tests {
     #[test]
     fn plugin_list_parses_under_plugin() {
         let cli =
-            MultitoolCli::try_parse_from(["codex", "plugin", "list", "--marketplace", "debug"])
+            MultitoolCli::try_parse_from(["aimux", "plugin", "list", "--marketplace", "debug"])
                 .expect("parse");
 
         assert!(matches!(cli.subcommand, Some(Subcommand::Plugin(_))));
@@ -2900,7 +2900,7 @@ mod tests {
     #[test]
     fn plugin_remove_parses_under_plugin() {
         let cli = MultitoolCli::try_parse_from([
-            "codex",
+            "aimux",
             "plugin",
             "remove",
             "sample",
@@ -2914,7 +2914,7 @@ mod tests {
 
     #[test]
     fn update_parses_as_update_subcommand() {
-        let cli = MultitoolCli::try_parse_from(["codex", "update"]).expect("parse");
+        let cli = MultitoolCli::try_parse_from(["aimux", "update"]).expect("parse");
         assert!(matches!(cli.subcommand, Some(Subcommand::Update)));
     }
 
@@ -2922,7 +2922,7 @@ mod tests {
     fn archive_merges_scoped_tui_flags() {
         let (target, interactive, remote) = finalize_archive_from_args(
             [
-                "codex",
+                "aimux",
                 "-C",
                 "/root",
                 "archive",
@@ -2968,7 +2968,7 @@ mod tests {
     #[test]
     fn sandbox_parses_permission_profile() {
         let cli = MultitoolCli::try_parse_from([
-            "codex",
+            "aimux",
             "sandbox",
             "--permission-profile",
             ":workspace",
@@ -2989,7 +2989,7 @@ mod tests {
     #[test]
     fn sandbox_parses_legacy_permissions_profile_alias() {
         let cli = MultitoolCli::try_parse_from([
-            "codex",
+            "aimux",
             "sandbox",
             "--permissions-profile",
             ":workspace",
@@ -3009,7 +3009,7 @@ mod tests {
     #[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
     #[test]
     fn sandbox_help_only_shows_singular_permission_profile() {
-        let help = help_from_args(&["codex", "sandbox", "--help"]);
+        let help = help_from_args(&["aimux", "sandbox", "--help"]);
         assert!(help.contains("--permission-profile"), "{help}");
         assert!(!help.contains("--permissions-profile"), "{help}");
     }
@@ -3018,7 +3018,7 @@ mod tests {
     #[test]
     fn sandbox_parses_permissions_profile_short_alias() {
         let cli =
-            MultitoolCli::try_parse_from(["codex", "sandbox", "-P", ":workspace", "--", "echo"])
+            MultitoolCli::try_parse_from(["aimux", "sandbox", "-P", ":workspace", "--", "echo"])
                 .expect("parse");
 
         let Some(Subcommand::Sandbox(command)) = cli.subcommand else {
@@ -3033,7 +3033,7 @@ mod tests {
     #[test]
     fn sandbox_parses_config_profile() {
         let cli =
-            MultitoolCli::try_parse_from(["codex", "sandbox", "--profile", "work", "--", "echo"])
+            MultitoolCli::try_parse_from(["aimux", "sandbox", "--profile", "work", "--", "echo"])
                 .expect("parse");
 
         let Some(Subcommand::Sandbox(command)) = cli.subcommand else {
@@ -3047,7 +3047,7 @@ mod tests {
     #[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
     #[test]
     fn sandbox_rejects_explicit_profile_controls_without_profile() {
-        let err = MultitoolCli::try_parse_from(["codex", "sandbox", "-C", "/tmp"])
+        let err = MultitoolCli::try_parse_from(["aimux", "sandbox", "-C", "/tmp"])
             .expect_err("parse should fail");
 
         assert_eq!(err.kind(), clap::error::ErrorKind::MissingRequiredArgument);
@@ -3056,7 +3056,7 @@ mod tests {
     #[test]
     fn plugin_marketplace_remove_parses_under_plugin() {
         let cli =
-            MultitoolCli::try_parse_from(["codex", "plugin", "marketplace", "remove", "debug"])
+            MultitoolCli::try_parse_from(["aimux", "plugin", "marketplace", "remove", "debug"])
                 .expect("parse");
 
         assert!(matches!(cli.subcommand, Some(Subcommand::Plugin(_))));
@@ -3065,28 +3065,28 @@ mod tests {
     #[test]
     fn marketplace_no_longer_parses_at_top_level() {
         let add_result =
-            MultitoolCli::try_parse_from(["codex", "marketplace", "add", "owner/repo"]);
+            MultitoolCli::try_parse_from(["aimux", "marketplace", "add", "owner/repo"]);
         assert!(add_result.is_err());
 
         let upgrade_result =
-            MultitoolCli::try_parse_from(["codex", "marketplace", "upgrade", "debug"]);
+            MultitoolCli::try_parse_from(["aimux", "marketplace", "upgrade", "debug"]);
         assert!(upgrade_result.is_err());
 
         let remove_result =
-            MultitoolCli::try_parse_from(["codex", "marketplace", "remove", "debug"]);
+            MultitoolCli::try_parse_from(["aimux", "marketplace", "remove", "debug"]);
         assert!(remove_result.is_err());
     }
 
     #[test]
     fn full_auto_no_longer_parses_at_top_level() {
-        let result = MultitoolCli::try_parse_from(["codex", "--full-auto"]);
+        let result = MultitoolCli::try_parse_from(["aimux", "--full-auto"]);
 
         assert!(result.is_err());
     }
 
     #[test]
     fn exec_full_auto_reports_migration_path() {
-        let cli = MultitoolCli::try_parse_from(["codex", "exec", "--full-auto", "summarize"])
+        let cli = MultitoolCli::try_parse_from(["aimux", "exec", "--full-auto", "summarize"])
             .expect("exec should accept removed flag long enough to report a migration path");
         let Some(Subcommand::Exec(exec)) = cli.subcommand else {
             panic!("expected exec subcommand");
@@ -3100,7 +3100,7 @@ mod tests {
 
     #[test]
     fn sandbox_full_auto_no_longer_parses() {
-        let result = MultitoolCli::try_parse_from(["codex", "sandbox", "--full-auto", "--"]);
+        let result = MultitoolCli::try_parse_from(["aimux", "sandbox", "--full-auto", "--"]);
 
         assert!(result.is_err());
     }
@@ -3164,7 +3164,7 @@ mod tests {
             lines,
             vec![
                 "Token usage: total=2 input=0 output=2".to_string(),
-                "To continue this session, run codex resume 123e4567-e89b-12d3-a456-426614174000"
+                "To continue this session, run aimux resume 123e4567-e89b-12d3-a456-426614174000"
                     .to_string(),
             ]
         );
@@ -3181,7 +3181,7 @@ mod tests {
             lines,
             vec![
                 "Token usage: total=2 input=0 output=2".to_string(),
-                "To continue this session, run codex resume 123e4567-e89b-12d3-a456-426614174000"
+                "To continue this session, run aimux resume 123e4567-e89b-12d3-a456-426614174000"
                     .to_string(),
             ]
         );
@@ -3209,7 +3209,7 @@ mod tests {
             lines,
             vec![
                 "Token usage: total=2 input=0 output=2".to_string(),
-                "To continue this session, run codex resume, then select my-thread (123e4567-e89b-12d3-a456-426614174000)".to_string(),
+                "To continue this session, run aimux resume, then select my-thread (123e4567-e89b-12d3-a456-426614174000)".to_string(),
             ]
         );
     }
@@ -3217,7 +3217,7 @@ mod tests {
     #[test]
     fn resume_model_flag_applies_when_no_root_flags() {
         let interactive =
-            finalize_resume_from_args(["codex", "resume", "-m", "gpt-5.1-test"].as_ref());
+            finalize_resume_from_args(["aimux", "resume", "-m", "gpt-5.1-test"].as_ref());
 
         assert_eq!(interactive.model.as_deref(), Some("gpt-5.1-test"));
         assert!(interactive.resume_picker);
@@ -3227,7 +3227,7 @@ mod tests {
 
     #[test]
     fn resume_picker_logic_none_and_not_last() {
-        let interactive = finalize_resume_from_args(["codex", "resume"].as_ref());
+        let interactive = finalize_resume_from_args(["aimux", "resume"].as_ref());
         assert!(interactive.resume_picker);
         assert!(!interactive.resume_last);
         assert_eq!(interactive.resume_session_id, None);
@@ -3236,7 +3236,7 @@ mod tests {
 
     #[test]
     fn resume_picker_logic_last() {
-        let interactive = finalize_resume_from_args(["codex", "resume", "--last"].as_ref());
+        let interactive = finalize_resume_from_args(["aimux", "resume", "--last"].as_ref());
         assert!(!interactive.resume_picker);
         assert!(interactive.resume_last);
         assert_eq!(interactive.resume_session_id, None);
@@ -3246,7 +3246,7 @@ mod tests {
     #[test]
     fn resume_last_accepts_prompt_positional() {
         let interactive = finalize_resume_from_args(
-            ["codex", "resume", "--last", "/compact focus on auth"].as_ref(),
+            ["aimux", "resume", "--last", "/compact focus on auth"].as_ref(),
         );
 
         assert!(!interactive.resume_picker);
@@ -3261,7 +3261,7 @@ mod tests {
     #[test]
     fn resume_last_rejects_explicit_session_and_prompt() {
         let err =
-            MultitoolCli::try_parse_from(["codex", "resume", "--last", "1234", "continue here"])
+            MultitoolCli::try_parse_from(["aimux", "resume", "--last", "1234", "continue here"])
                 .expect_err("--last with an explicit session and prompt should be rejected");
 
         assert_eq!(err.kind(), clap::error::ErrorKind::ArgumentConflict);
@@ -3269,7 +3269,7 @@ mod tests {
 
     #[test]
     fn resume_picker_logic_with_session_id() {
-        let interactive = finalize_resume_from_args(["codex", "resume", "1234"].as_ref());
+        let interactive = finalize_resume_from_args(["aimux", "resume", "1234"].as_ref());
         assert!(!interactive.resume_picker);
         assert!(!interactive.resume_last);
         assert_eq!(interactive.resume_session_id.as_deref(), Some("1234"));
@@ -3279,7 +3279,7 @@ mod tests {
     #[test]
     fn resume_with_session_id_accepts_prompt_positional() {
         let interactive =
-            finalize_resume_from_args(["codex", "resume", "1234", "continue here"].as_ref());
+            finalize_resume_from_args(["aimux", "resume", "1234", "continue here"].as_ref());
 
         assert!(!interactive.resume_picker);
         assert!(!interactive.resume_last);
@@ -3289,7 +3289,7 @@ mod tests {
 
     #[test]
     fn resume_all_flag_sets_show_all() {
-        let interactive = finalize_resume_from_args(["codex", "resume", "--all"].as_ref());
+        let interactive = finalize_resume_from_args(["aimux", "resume", "--all"].as_ref());
         assert!(interactive.resume_picker);
         assert!(interactive.resume_show_all);
     }
@@ -3297,7 +3297,7 @@ mod tests {
     #[test]
     fn resume_include_non_interactive_flag_sets_source_filter_override() {
         let interactive =
-            finalize_resume_from_args(["codex", "resume", "--include-non-interactive"].as_ref());
+            finalize_resume_from_args(["aimux", "resume", "--include-non-interactive"].as_ref());
 
         assert!(interactive.resume_picker);
         assert!(interactive.resume_include_non_interactive);
@@ -3307,7 +3307,7 @@ mod tests {
     fn resume_merges_option_flags() {
         let interactive = finalize_resume_from_args(
             [
-                "codex",
+                "aimux",
                 "resume",
                 "sid",
                 "--oss",
@@ -3364,7 +3364,7 @@ mod tests {
     fn resume_merges_dangerously_bypass_flag() {
         let interactive = finalize_resume_from_args(
             [
-                "codex",
+                "aimux",
                 "resume",
                 "--dangerously-bypass-approvals-and-sandbox",
             ]
@@ -3379,7 +3379,7 @@ mod tests {
     #[test]
     fn resume_merges_bypass_hook_trust_flag() {
         let interactive = finalize_resume_from_args(
-            ["codex", "resume", "--dangerously-bypass-hook-trust"].as_ref(),
+            ["aimux", "resume", "--dangerously-bypass-hook-trust"].as_ref(),
         );
 
         assert!(interactive.bypass_hook_trust);
@@ -3390,7 +3390,7 @@ mod tests {
 
     #[test]
     fn fork_picker_logic_none_and_not_last() {
-        let interactive = finalize_fork_from_args(["codex", "fork"].as_ref());
+        let interactive = finalize_fork_from_args(["aimux", "fork"].as_ref());
         assert!(interactive.fork_picker);
         assert!(!interactive.fork_last);
         assert_eq!(interactive.fork_session_id, None);
@@ -3399,7 +3399,7 @@ mod tests {
 
     #[test]
     fn fork_picker_logic_last() {
-        let interactive = finalize_fork_from_args(["codex", "fork", "--last"].as_ref());
+        let interactive = finalize_fork_from_args(["aimux", "fork", "--last"].as_ref());
         assert!(!interactive.fork_picker);
         assert!(interactive.fork_last);
         assert_eq!(interactive.fork_session_id, None);
@@ -3409,7 +3409,7 @@ mod tests {
     #[test]
     fn fork_last_accepts_prompt_positional() {
         let interactive =
-            finalize_fork_from_args(["codex", "fork", "--last", "/compact focus on auth"].as_ref());
+            finalize_fork_from_args(["aimux", "fork", "--last", "/compact focus on auth"].as_ref());
 
         assert!(!interactive.fork_picker);
         assert!(interactive.fork_last);
@@ -3423,7 +3423,7 @@ mod tests {
     #[test]
     fn fork_last_rejects_explicit_session_and_prompt() {
         let err =
-            MultitoolCli::try_parse_from(["codex", "fork", "--last", "1234", "continue here"])
+            MultitoolCli::try_parse_from(["aimux", "fork", "--last", "1234", "continue here"])
                 .expect_err("--last with an explicit session and prompt should be rejected");
 
         assert_eq!(err.kind(), clap::error::ErrorKind::ArgumentConflict);
@@ -3431,7 +3431,7 @@ mod tests {
 
     #[test]
     fn fork_picker_logic_with_session_id() {
-        let interactive = finalize_fork_from_args(["codex", "fork", "1234"].as_ref());
+        let interactive = finalize_fork_from_args(["aimux", "fork", "1234"].as_ref());
         assert!(!interactive.fork_picker);
         assert!(!interactive.fork_last);
         assert_eq!(interactive.fork_session_id.as_deref(), Some("1234"));
@@ -3441,7 +3441,7 @@ mod tests {
     #[test]
     fn fork_with_session_id_accepts_prompt_positional() {
         let interactive =
-            finalize_fork_from_args(["codex", "fork", "1234", "continue here"].as_ref());
+            finalize_fork_from_args(["aimux", "fork", "1234", "continue here"].as_ref());
 
         assert!(!interactive.fork_picker);
         assert!(!interactive.fork_last);
@@ -3451,14 +3451,14 @@ mod tests {
 
     #[test]
     fn fork_all_flag_sets_show_all() {
-        let interactive = finalize_fork_from_args(["codex", "fork", "--all"].as_ref());
+        let interactive = finalize_fork_from_args(["aimux", "fork", "--all"].as_ref());
         assert!(interactive.fork_picker);
         assert!(interactive.fork_show_all);
     }
 
     #[test]
     fn app_server_analytics_default_disabled_without_flag() {
-        let app_server = app_server_from_args(["codex", "app-server"].as_ref());
+        let app_server = app_server_from_args(["aimux", "app-server"].as_ref());
         assert!(!app_server.analytics_default_enabled);
         assert!(!app_server.remote_control);
         assert_eq!(
@@ -3469,23 +3469,23 @@ mod tests {
 
     #[test]
     fn app_server_remote_control_startup_flag_enables_remote_control() {
-        let enabled = app_server_from_args(["codex", "app-server", "--remote-control"].as_ref());
+        let enabled = app_server_from_args(["aimux", "app-server", "--remote-control"].as_ref());
         assert!(enabled.remote_control);
     }
 
     #[test]
     fn app_server_analytics_default_enabled_with_flag() {
         let app_server =
-            app_server_from_args(["codex", "app-server", "--analytics-default-enabled"].as_ref());
+            app_server_from_args(["aimux", "app-server", "--analytics-default-enabled"].as_ref());
         assert!(app_server.analytics_default_enabled);
     }
 
     #[test]
     fn strict_config_parses_for_supported_commands() {
-        let cli = MultitoolCli::try_parse_from(["codex", "--strict-config"]).expect("parse");
+        let cli = MultitoolCli::try_parse_from(["aimux", "--strict-config"]).expect("parse");
         assert!(cli.interactive.strict_config);
 
-        let cli = MultitoolCli::try_parse_from(["codex", "mcp-server", "--strict-config"])
+        let cli = MultitoolCli::try_parse_from(["aimux", "mcp-server", "--strict-config"])
             .expect("parse");
         assert_matches!(
             cli.subcommand,
@@ -3495,7 +3495,7 @@ mod tests {
         );
 
         let cli =
-            MultitoolCli::try_parse_from(["codex", "review", "--strict-config", "--uncommitted"])
+            MultitoolCli::try_parse_from(["aimux", "review", "--strict-config", "--uncommitted"])
                 .expect("parse");
         assert_matches!(
             cli.subcommand,
@@ -3505,7 +3505,7 @@ mod tests {
             }))
         );
 
-        let cli = MultitoolCli::try_parse_from(["codex", "exec-server", "--strict-config"])
+        let cli = MultitoolCli::try_parse_from(["aimux", "exec-server", "--strict-config"])
             .expect("parse");
         assert_matches!(
             cli.subcommand,
@@ -3518,7 +3518,7 @@ mod tests {
 
     #[test]
     fn root_strict_config_is_supported_for_exec_server() {
-        let cli = MultitoolCli::try_parse_from(["codex", "--strict-config", "exec-server"])
+        let cli = MultitoolCli::try_parse_from(["aimux", "--strict-config", "exec-server"])
             .expect("parse");
 
         reject_root_strict_config_for_subcommand(cli.interactive.strict_config, &cli.subcommand)
@@ -3527,7 +3527,7 @@ mod tests {
 
     #[test]
     fn root_strict_config_is_rejected_for_unsupported_subcommands() {
-        let cli = MultitoolCli::try_parse_from(["codex", "--strict-config", "mcp", "list"])
+        let cli = MultitoolCli::try_parse_from(["aimux", "--strict-config", "mcp", "list"])
             .expect("parse");
         let err = reject_root_strict_config_for_subcommand(
             cli.interactive.strict_config,
@@ -3540,7 +3540,7 @@ mod tests {
             "`--strict-config` is not supported for `codex mcp`"
         );
 
-        let cli = MultitoolCli::try_parse_from(["codex", "--strict-config", "remote-control"])
+        let cli = MultitoolCli::try_parse_from(["aimux", "--strict-config", "remote-control"])
             .expect("parse");
         let err = reject_root_strict_config_for_subcommand(
             cli.interactive.strict_config,
@@ -3557,7 +3557,7 @@ mod tests {
     #[test]
     fn app_server_subcommands_reject_strict_config() {
         let app_server =
-            app_server_from_args(["codex", "app-server", "--strict-config", "proxy"].as_ref());
+            app_server_from_args(["aimux", "app-server", "--strict-config", "proxy"].as_ref());
         let err = reject_strict_config_for_app_server_subcommand(
             app_server.strict_config,
             app_server.subcommand.as_ref(),
@@ -3572,7 +3572,7 @@ mod tests {
 
     #[test]
     fn reject_remote_flag_for_remote_control() {
-        let cli = MultitoolCli::try_parse_from(["codex", "--remote", "unix://", "remote-control"])
+        let cli = MultitoolCli::try_parse_from(["aimux", "--remote", "unix://", "remote-control"])
             .expect("parse");
         let Some(Subcommand::RemoteControl(remote_control)) = &cli.subcommand else {
             panic!("expected remote-control subcommand");
@@ -3591,7 +3591,7 @@ mod tests {
 
     #[test]
     fn remote_control_pair_parses() {
-        let cli = MultitoolCli::try_parse_from(["codex", "remote-control", "pair"]).expect("parse");
+        let cli = MultitoolCli::try_parse_from(["aimux", "remote-control", "pair"]).expect("parse");
         let Some(Subcommand::RemoteControl(remote_control)) = &cli.subcommand else {
             panic!("expected remote-control subcommand");
         };
@@ -3600,7 +3600,7 @@ mod tests {
 
     #[test]
     fn remote_flag_parses_for_interactive_root() {
-        let cli = MultitoolCli::try_parse_from(["codex", "--remote", "unix://codex.sock"])
+        let cli = MultitoolCli::try_parse_from(["aimux", "--remote", "unix://codex.sock"])
             .expect("parse");
         assert_eq!(cli.remote.remote.as_deref(), Some("unix://codex.sock"));
     }
@@ -3608,7 +3608,7 @@ mod tests {
     #[test]
     fn remote_auth_token_env_flag_parses_for_interactive_root() {
         let cli = MultitoolCli::try_parse_from([
-            "codex",
+            "aimux",
             "--remote-auth-token-env",
             "CODEX_REMOTE_AUTH_TOKEN",
             "--remote",
@@ -3624,7 +3624,7 @@ mod tests {
     #[test]
     fn remote_flag_parses_for_resume_subcommand() {
         let cli =
-            MultitoolCli::try_parse_from(["codex", "resume", "--remote", "unix://codex.sock"])
+            MultitoolCli::try_parse_from(["aimux", "resume", "--remote", "unix://codex.sock"])
                 .expect("parse");
         let Subcommand::Resume(ResumeCommand { remote, .. }) =
             cli.subcommand.expect("resume present")
@@ -3708,7 +3708,7 @@ mod tests {
     #[test]
     fn app_server_listen_websocket_url_parses() {
         let app_server = app_server_from_args(
-            ["codex", "app-server", "--listen", "ws://127.0.0.1:4500"].as_ref(),
+            ["aimux", "app-server", "--listen", "ws://127.0.0.1:4500"].as_ref(),
         );
         assert_eq!(
             app_server.listen,
@@ -3721,7 +3721,7 @@ mod tests {
     #[test]
     fn app_server_listen_stdio_url_parses() {
         let app_server =
-            app_server_from_args(["codex", "app-server", "--listen", "stdio://"].as_ref());
+            app_server_from_args(["aimux", "app-server", "--listen", "stdio://"].as_ref());
         assert_eq!(
             app_server.listen,
             codex_app_server::AppServerTransport::Stdio
@@ -3730,14 +3730,14 @@ mod tests {
 
     #[test]
     fn app_server_stdio_flag_parses() {
-        let app_server = app_server_from_args(["codex", "app-server", "--stdio"].as_ref());
+        let app_server = app_server_from_args(["aimux", "app-server", "--stdio"].as_ref());
         assert!(app_server.stdio);
     }
 
     #[test]
     fn app_server_stdio_flag_conflicts_with_listen() {
         let err = MultitoolCli::try_parse_from([
-            "codex",
+            "aimux",
             "app-server",
             "--stdio",
             "--listen",
@@ -3750,7 +3750,7 @@ mod tests {
     #[test]
     fn app_server_listen_unix_socket_url_parses() {
         let app_server =
-            app_server_from_args(["codex", "app-server", "--listen", "unix://"].as_ref());
+            app_server_from_args(["aimux", "app-server", "--listen", "unix://"].as_ref());
         assert_eq!(
             app_server.listen,
             codex_app_server::AppServerTransport::UnixSocket {
@@ -3762,7 +3762,7 @@ mod tests {
     #[test]
     fn app_server_listen_unix_socket_path_parses() {
         let app_server = app_server_from_args(
-            ["codex", "app-server", "--listen", "unix:///tmp/codex.sock"].as_ref(),
+            ["aimux", "app-server", "--listen", "unix:///tmp/codex.sock"].as_ref(),
         );
         assert_eq!(
             app_server.listen,
@@ -3775,20 +3775,20 @@ mod tests {
 
     #[test]
     fn app_server_listen_off_parses() {
-        let app_server = app_server_from_args(["codex", "app-server", "--listen", "off"].as_ref());
+        let app_server = app_server_from_args(["aimux", "app-server", "--listen", "off"].as_ref());
         assert_eq!(app_server.listen, codex_app_server::AppServerTransport::Off);
     }
 
     #[test]
     fn app_server_listen_invalid_url_fails_to_parse() {
         let parse_result =
-            MultitoolCli::try_parse_from(["codex", "app-server", "--listen", "http://foo"]);
+            MultitoolCli::try_parse_from(["aimux", "app-server", "--listen", "http://foo"]);
         assert!(parse_result.is_err());
     }
 
     #[test]
     fn app_server_proxy_subcommand_parses() {
-        let app_server = app_server_from_args(["codex", "app-server", "proxy"].as_ref());
+        let app_server = app_server_from_args(["aimux", "app-server", "proxy"].as_ref());
         assert!(matches!(
             app_server.subcommand,
             Some(AppServerSubcommand::Proxy(AppServerProxyCommand {
@@ -3802,7 +3802,7 @@ mod tests {
         assert!(matches!(
             app_server_from_args(
                 [
-                    "codex",
+                    "aimux",
                     "app-server",
                     "daemon",
                     "bootstrap",
@@ -3818,20 +3818,20 @@ mod tests {
             }))
         ));
         assert!(matches!(
-            app_server_from_args(["codex", "app-server", "daemon", "start"].as_ref()).subcommand,
+            app_server_from_args(["aimux", "app-server", "daemon", "start"].as_ref()).subcommand,
             Some(AppServerSubcommand::Daemon(AppServerDaemonCommand {
                 subcommand: AppServerDaemonSubcommand::Start
             }))
         ));
         assert!(matches!(
-            app_server_from_args(["codex", "app-server", "daemon", "restart"].as_ref()).subcommand,
+            app_server_from_args(["aimux", "app-server", "daemon", "restart"].as_ref()).subcommand,
             Some(AppServerSubcommand::Daemon(AppServerDaemonCommand {
                 subcommand: AppServerDaemonSubcommand::Restart
             }))
         ));
         assert!(matches!(
             app_server_from_args(
-                ["codex", "app-server", "daemon", "enable-remote-control"].as_ref()
+                ["aimux", "app-server", "daemon", "enable-remote-control"].as_ref()
             )
             .subcommand,
             Some(AppServerSubcommand::Daemon(AppServerDaemonCommand {
@@ -3840,7 +3840,7 @@ mod tests {
         ));
         assert!(matches!(
             app_server_from_args(
-                ["codex", "app-server", "daemon", "disable-remote-control"].as_ref()
+                ["aimux", "app-server", "daemon", "disable-remote-control"].as_ref()
             )
             .subcommand,
             Some(AppServerSubcommand::Daemon(AppServerDaemonCommand {
@@ -3848,13 +3848,13 @@ mod tests {
             }))
         ));
         assert!(matches!(
-            app_server_from_args(["codex", "app-server", "daemon", "stop"].as_ref()).subcommand,
+            app_server_from_args(["aimux", "app-server", "daemon", "stop"].as_ref()).subcommand,
             Some(AppServerSubcommand::Daemon(AppServerDaemonCommand {
                 subcommand: AppServerDaemonSubcommand::Stop
             }))
         ));
         assert!(matches!(
-            app_server_from_args(["codex", "app-server", "daemon", "version"].as_ref()).subcommand,
+            app_server_from_args(["aimux", "app-server", "daemon", "version"].as_ref()).subcommand,
             Some(AppServerSubcommand::Daemon(AppServerDaemonCommand {
                 subcommand: AppServerDaemonSubcommand::Version
             }))
@@ -3864,7 +3864,7 @@ mod tests {
     #[test]
     fn app_server_proxy_sock_path_parses() {
         let app_server =
-            app_server_from_args(["codex", "app-server", "proxy", "--sock", "codex.sock"].as_ref());
+            app_server_from_args(["aimux", "app-server", "proxy", "--sock", "codex.sock"].as_ref());
         let Some(AppServerSubcommand::Proxy(proxy)) = app_server.subcommand else {
             panic!("expected proxy subcommand");
         };
@@ -3907,7 +3907,7 @@ mod tests {
     fn app_server_capability_token_flags_parse() {
         let app_server = app_server_from_args(
             [
-                "codex",
+                "aimux",
                 "app-server",
                 "--ws-auth",
                 "capability-token",
@@ -3930,7 +3930,7 @@ mod tests {
     fn app_server_signed_bearer_flags_parse() {
         let app_server = app_server_from_args(
             [
-                "codex",
+                "aimux",
                 "app-server",
                 "--ws-auth",
                 "signed-bearer-token",
@@ -3961,7 +3961,7 @@ mod tests {
     #[test]
     fn app_server_rejects_removed_insecure_non_loopback_flag() {
         let parse_result = MultitoolCli::try_parse_from([
-            "codex",
+            "aimux",
             "app-server",
             "--allow-unauthenticated-non-loopback-ws",
         ]);
@@ -3970,7 +3970,7 @@ mod tests {
 
     #[test]
     fn features_enable_parses_feature_name() {
-        let cli = MultitoolCli::try_parse_from(["codex", "features", "enable", "unified_exec"])
+        let cli = MultitoolCli::try_parse_from(["aimux", "features", "enable", "unified_exec"])
             .expect("parse should succeed");
         let Some(Subcommand::Features(FeaturesCli { sub })) = cli.subcommand else {
             panic!("expected features subcommand");
@@ -3983,7 +3983,7 @@ mod tests {
 
     #[test]
     fn features_disable_parses_feature_name() {
-        let cli = MultitoolCli::try_parse_from(["codex", "features", "disable", "shell_tool"])
+        let cli = MultitoolCli::try_parse_from(["aimux", "features", "disable", "shell_tool"])
             .expect("parse should succeed");
         let Some(Subcommand::Features(FeaturesCli { sub })) = cli.subcommand else {
             panic!("expected features subcommand");
@@ -4072,7 +4072,7 @@ mod tests {
     }
 
     fn strict_config_feature_toggle_error(args: &[&str]) -> anyhow::Error {
-        let cli_args = std::iter::once("codex")
+        let cli_args = std::iter::once("aimux")
             .chain(std::iter::once("--strict-config"))
             .chain(args.iter().copied());
         let cli = MultitoolCli::try_parse_from(cli_args).expect("parse should succeed");

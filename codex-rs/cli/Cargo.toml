@@ -6,7 +6,7 @@ license.workspace = true
 build = "build.rs"
 
 [[bin]]
-name = "codex"
+name = "aimux"
 path = "src/main.rs"
 
 [lib]
