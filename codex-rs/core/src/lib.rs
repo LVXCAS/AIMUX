@@ -136,6 +136,9 @@ pub use agents_md::LOCAL_AGENTS_MD_FILENAME;
 pub use agents_md::LoadedAgentsMd;
 mod rollout;
 mod rollout_budget;
+/// AIMUX model router + learning module (ported from the TS prototype).
+/// Gated behind the `router_enabled` config flag; default behavior unchanged.
+pub mod router;
 pub(crate) mod safety;
 mod session_rollout_init_error;
 pub mod shell;

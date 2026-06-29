@@ -640,6 +640,11 @@ pub struct Config {
     /// Info needed to make an API request to the model.
     pub model_provider: ModelProviderInfo,
 
+    /// AIMUX: when true, the experimental model router + learning module may
+    /// override the resolved `model_provider_id`. Defaults to false, in which
+    /// case provider resolution is unchanged.
+    pub router_enabled: bool,
+
     /// Optionally specify the personality of the model
     pub personality: Option<Personality>,
 
@@ -3764,6 +3769,7 @@ impl Config {
                 .unwrap_or_default(),
             model_provider_id,
             model_provider,
+            router_enabled: cfg.router_enabled.unwrap_or(false),
             cwd: resolved_cwd,
             workspace_roots: workspace_roots.clone(),
             workspace_roots_explicit,
