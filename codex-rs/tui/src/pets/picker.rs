@@ -253,7 +253,7 @@ mod tests {
                 "Disable terminal pets",
                 "BSOD",
                 "Chefito",
-                "Codex",
+                "AIMUX",
                 "Dewey",
                 "Fireball",
                 "Null Signal",
@@ -279,7 +279,7 @@ mod tests {
         );
 
         assert_eq!(params.initial_selected_idx, Some(2));
-        assert_eq!(params.items[2].name, "Codex");
+        assert_eq!(params.items[2].name, "AIMUX");
         assert!(!params.items[2].is_current);
     }
 
