@@ -175,22 +175,34 @@ pub(crate) fn new_session_info(
     let mut parts: Vec<Box<dyn HistoryCell>> = vec![Box::new(header)];
 
     if is_first_event {
-        // Brand tagline cell above the help block — the single biggest
-        // "this isn't Codex" signal on first run.
-        let tagline_lines: Vec<Line<'static>> = vec![
-            Line::from(vec![
-                Span::from("  "),
-                Span::styled("» ", Style::default().fg(crate::style::brand_accent())),
-                Span::styled(
-                    "Bring your own model. Same agent, every provider.",
-                    Style::default().fg(crate::style::brand_dim()).italic(),
-                ),
-            ]),
-            Line::from(""),
+        // Big AIMUX wordmark banner at the very top of the first screen — the
+        // primary "this isn't Codex" signal. Shadow/3D block letters in the
+        // brand accent.
+        let accent = crate::style::brand_accent();
+        let dim = crate::style::brand_dim();
+        let logo = [
+            r"  █████╗ ██╗███╗   ███╗██╗   ██╗██╗  ██╗",
+            r" ██╔══██╗██║████╗ ████║██║   ██║╚██╗██╔╝",
+            r" ███████║██║██╔████╔██║██║   ██║ ╚███╔╝ ",
+            r" ██╔══██║██║██║╚██╔╝██║██║   ██║ ██╔██╗ ",
+            r" ██║  ██║██║██║ ╚═╝ ██║╚██████╔╝██╔╝ ██╗",
+            r" ╚═╝  ╚═╝╚═╝╚═╝     ╚═╝ ╚═════╝ ╚═╝  ╚═╝ ",
         ];
-        parts.push(Box::new(PlainHistoryCell {
-            lines: tagline_lines,
-        }));
+        let mut logo_lines: Vec<Line<'static>> = logo
+            .iter()
+            .map(|row| {
+                Line::from(Span::styled(
+                    (*row).to_string(),
+                    Style::default().fg(accent).bold(),
+                ))
+            })
+            .collect();
+        logo_lines.push(Line::from(Span::styled(
+            "          one agent · any model".to_string(),
+            Style::default().fg(dim).italic(),
+        )));
+        logo_lines.push(Line::from(""));
+        parts.insert(0, Box::new(PlainHistoryCell { lines: logo_lines }));
 
         // Help lines below the header (new copy and list)
         let help_lines: Vec<Line<'static>> = vec![
