@@ -36,8 +36,14 @@ pub(crate) fn shimmer_spans(text: &str) -> Vec<Span<'static>> {
     let band_half_width = 5.0;
 
     let mut spans: Vec<Span<'static>> = Vec::with_capacity(chars.len());
-    let base_color = default_fg().unwrap_or((128, 128, 128));
-    let highlight_color = default_bg().unwrap_or((255, 255, 255));
+    let base_color = default_fg().unwrap_or((178, 178, 178));
+    // The shimmer band peaks at the AIMUX indigo accent and fades to the
+    // default foreground, so "Working"/"Thinking" reads as brand motion.
+    let peak_color = if default_bg().is_some_and(crate::color::is_light) {
+        crate::style::AIMUX_ACCENT_LIGHT_RGB
+    } else {
+        crate::style::AIMUX_ACCENT_RGB
+    };
     for (i, ch) in chars.iter().enumerate() {
         let i_pos = i as isize + padding as isize;
         let pos = pos as isize;
@@ -51,7 +57,7 @@ pub(crate) fn shimmer_spans(text: &str) -> Vec<Span<'static>> {
         };
         let style = if has_true_color {
             let highlight = t.clamp(0.0, 1.0);
-            let (r, g, b) = blend(highlight_color, base_color, highlight * 0.9);
+            let (r, g, b) = blend(peak_color, base_color, (highlight * 0.85).clamp(0.0, 1.0));
             // Allow custom RGB colors, as the implementation is thoughtfully
             // adjusting the level of the default foreground color.
             #[allow(clippy::disallowed_methods)]

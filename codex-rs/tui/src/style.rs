@@ -10,9 +10,33 @@ use ratatui::style::Color;
 use ratatui::style::Style;
 use ratatui::style::Stylize;
 
-const LIGHT_BG_ACCENT_RGB: (u8, u8, u8) = (0, 95, 135);
+// AIMUX brand palette. A single electric-indigo accent, applied sparingly to
+// the wordmark, the active model name, the spinner band, and the picker chrome.
+/// Primary accent — electric indigo (#7C5CFF).
+pub(crate) const AIMUX_ACCENT_RGB: (u8, u8, u8) = (124, 92, 255);
+/// Secondary / dim accent — muted indigo (#5646A0) for chrome that must recede.
+pub(crate) const AIMUX_ACCENT_DIM_RGB: (u8, u8, u8) = (86, 70, 160);
+/// On-light fallback — darker indigo (#4A2FBD) for light terminals.
+pub(crate) const AIMUX_ACCENT_LIGHT_RGB: (u8, u8, u8) = (74, 47, 189);
+
 // Decorative table rules should remain visible without competing with cell content.
 const TABLE_SEPARATOR_FG_ALPHA: f32 = 0.20;
+
+/// Brand accent color (indigo), independent of selection state. Used by the
+/// wordmark, the `»` brand glyph, and the active model name.
+pub(crate) fn brand_accent() -> Color {
+    if default_bg().is_some_and(is_light) {
+        rgb_color(AIMUX_ACCENT_LIGHT_RGB)
+    } else {
+        rgb_color(AIMUX_ACCENT_RGB)
+    }
+}
+
+/// Muted brand accent (dim indigo). Used for the card border, version tag,
+/// `/model` hint, and picker group headers.
+pub(crate) fn brand_dim() -> Color {
+    rgb_color(AIMUX_ACCENT_DIM_RGB)
+}
 
 pub fn user_message_style() -> Style {
     user_message_style_for(default_bg())
@@ -48,11 +72,19 @@ pub fn proposed_plan_style_for(terminal_bg: Option<(u8, u8, u8)>) -> Style {
 }
 
 /// Returns the shared accent style for the provided terminal background.
+///
+/// AIMUX uses a single electric-indigo accent. On truecolor terminals the exact
+/// RGB is used; on lower color levels it degrades to the nearest palette violet
+/// rather than falling back to a named cyan (the old Codex accent).
 pub(crate) fn accent_style_for(terminal_bg: Option<(u8, u8, u8)>) -> Style {
-    if terminal_bg.is_some_and(is_light) {
-        Style::default().fg(best_color(LIGHT_BG_ACCENT_RGB)).bold()
+    let accent_rgb = if terminal_bg.is_some_and(is_light) {
+        AIMUX_ACCENT_LIGHT_RGB
     } else {
-        Style::default().fg(Color::Cyan).bold()
+        AIMUX_ACCENT_RGB
+    };
+    match stdout_color_level() {
+        StdoutColorLevel::TrueColor => Style::default().fg(rgb_color(accent_rgb)).bold(),
+        _ => Style::default().fg(best_color(accent_rgb)).bold(),
     }
 }
 
@@ -93,20 +125,27 @@ mod tests {
     use pretty_assertions::assert_eq;
     use ratatui::style::Modifier;
 
+    fn expected_accent_fg(rgb: (u8, u8, u8)) -> Option<Color> {
+        match stdout_color_level() {
+            StdoutColorLevel::TrueColor => Some(rgb_color(rgb)),
+            _ => Some(best_color(rgb)),
+        }
+    }
+
     #[test]
-    fn accent_style_uses_darker_cyan_on_light_backgrounds() {
+    fn accent_style_uses_darker_indigo_on_light_backgrounds() {
         let style = accent_style_for(Some((255, 255, 255)));
 
-        assert_eq!(style.fg, Some(best_color(LIGHT_BG_ACCENT_RGB)));
+        assert_eq!(style.fg, expected_accent_fg(AIMUX_ACCENT_LIGHT_RGB));
         assert!(style.add_modifier.contains(Modifier::BOLD));
     }
 
     #[test]
-    fn accent_style_uses_cyan_on_dark_or_unknown_backgrounds() {
-        let expected = Style::default().fg(Color::Cyan).bold();
+    fn accent_style_uses_indigo_on_dark_or_unknown_backgrounds() {
+        let expected_fg = expected_accent_fg(AIMUX_ACCENT_RGB);
 
-        assert_eq!(accent_style_for(Some((0, 0, 0))), expected);
-        assert_eq!(accent_style_for(/*terminal_bg*/ None), expected);
+        assert_eq!(accent_style_for(Some((0, 0, 0))).fg, expected_fg);
+        assert_eq!(accent_style_for(/*terminal_bg*/ None).fg, expected_fg);
     }
 
     #[test]

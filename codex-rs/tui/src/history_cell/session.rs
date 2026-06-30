@@ -46,9 +46,17 @@ fn with_border_internal(
         .unwrap_or(max_line_width)
         .max(max_line_width);
 
+    let border_style = Style::default().fg(crate::style::brand_dim());
+
     let mut out = Vec::with_capacity(lines.len() + 2);
     let border_inner_width = content_width + 2;
-    out.push(vec![format!("╭{}╮", "─".repeat(border_inner_width)).dim()].into());
+    out.push(
+        vec![Span::styled(
+            format!("╭{}╮", "─".repeat(border_inner_width)),
+            border_style,
+        )]
+        .into(),
+    );
 
     for line in lines.into_iter() {
         let used_width: usize = line
@@ -57,16 +65,22 @@ fn with_border_internal(
             .sum();
         let span_count = line.spans.len();
         let mut spans: Vec<Span<'static>> = Vec::with_capacity(span_count + 4);
-        spans.push(Span::from("│ ").dim());
+        spans.push(Span::styled("│ ", border_style));
         spans.extend(line);
         if used_width < content_width {
             spans.push(Span::from(" ".repeat(content_width - used_width)).dim());
         }
-        spans.push(Span::from(" │").dim());
+        spans.push(Span::styled(" │", border_style));
         out.push(Line::from(spans));
     }
 
-    out.push(vec![format!("╰{}╯", "─".repeat(border_inner_width)).dim()].into());
+    out.push(
+        vec![Span::styled(
+            format!("╰{}╯", "─".repeat(border_inner_width)),
+            border_style,
+        )]
+        .into(),
+    );
 
     out
 }
@@ -161,6 +175,23 @@ pub(crate) fn new_session_info(
     let mut parts: Vec<Box<dyn HistoryCell>> = vec![Box::new(header)];
 
     if is_first_event {
+        // Brand tagline cell above the help block — the single biggest
+        // "this isn't Codex" signal on first run.
+        let tagline_lines: Vec<Line<'static>> = vec![
+            Line::from(vec![
+                Span::from("  "),
+                Span::styled("» ", Style::default().fg(crate::style::brand_accent())),
+                Span::styled(
+                    "Bring your own model. Same agent, every provider.",
+                    Style::default().fg(crate::style::brand_dim()).italic(),
+                ),
+            ]),
+            Line::from(""),
+        ];
+        parts.push(Box::new(PlainHistoryCell {
+            lines: tagline_lines,
+        }));
+
         // Help lines below the header (new copy and list)
         let help_lines: Vec<Line<'static>> = vec![
             "  To get started, describe a task or try one of these commands:"
@@ -332,12 +363,33 @@ impl HistoryCell for SessionHeaderHistoryCell {
 
         let make_row = |spans: Vec<Span<'static>>| Line::from(spans);
 
-        // Title line rendered inside the box: ">_ OpenAI Codex (vX)"
-        let title_spans: Vec<Span<'static>> = vec![
-            Span::from(">_ ").dim(),
-            Span::from("AIMUX").bold(),
-            Span::from(" ").dim(),
-            Span::from(format!("(v{})", self.version)).dim(),
+        let brand_accent = crate::style::brand_accent();
+        let brand_dim = crate::style::brand_dim();
+
+        // Title line: the AIMUX wordmark. `»  A I M U X` when the card is wide
+        // enough, falling back to plain `AIMUX` on very narrow cards.
+        let title_spans: Vec<Span<'static>> = if inner_width >= 11 {
+            vec![
+                Span::styled("»  ", Style::default().fg(brand_accent).bold()),
+                Span::styled("A I M U X", Style::default().fg(brand_accent).bold()),
+                Span::from("   "),
+                Span::styled(format!("v{}", self.version), Style::default().fg(brand_dim)),
+            ]
+        } else {
+            vec![
+                Span::styled("AIMUX", Style::default().fg(brand_accent).bold()),
+                Span::from(" ").dim(),
+                Span::styled(format!("v{}", self.version), Style::default().fg(brand_dim)),
+            ]
+        };
+
+        // Tagline row immediately below the wordmark: the product thesis.
+        let tagline_spans: Vec<Span<'static>> = vec![
+            Span::from("   "),
+            Span::styled(
+                "one agent · any model",
+                Style::default().fg(brand_dim).italic(),
+            ),
         ];
 
         const CHANGE_MODEL_HINT_COMMAND: &str = "/model";
@@ -357,21 +409,33 @@ impl HistoryCell for SessionHeaderHistoryCell {
         );
         let reasoning_label = self.reasoning_label();
         let model_spans: Vec<Span<'static>> = {
+            // The active model name is the brightest thing in the card — model
+            // selection is AIMUX's whole point.
+            let model_name_style = if self.model_style == Style::default() {
+                Style::default().fg(brand_accent)
+            } else {
+                self.model_style
+            };
             let mut spans = vec![
                 Span::from(format!("{model_label} ")).dim(),
-                Span::styled(self.model.clone(), self.model_style),
+                Span::styled(self.model.clone(), model_name_style),
             ];
             if let Some(reasoning) = reasoning_label {
-                spans.push(Span::from(" "));
-                spans.push(Span::from(reasoning.to_owned()));
+                spans.push(Span::from(format!("  ({reasoning})")).dim());
             }
             if self.show_fast_status {
                 spans.push("   ".into());
                 spans.push(Span::styled("fast", self.model_style.magenta()));
             }
             spans.push("   ".dim());
-            spans.push(CHANGE_MODEL_HINT_COMMAND.cyan());
-            spans.push(CHANGE_MODEL_HINT_EXPLANATION.dim());
+            spans.push(Span::styled(
+                CHANGE_MODEL_HINT_COMMAND,
+                Style::default().fg(brand_dim).italic(),
+            ));
+            spans.push(Span::styled(
+                CHANGE_MODEL_HINT_EXPLANATION,
+                Style::default().fg(brand_dim).italic(),
+            ));
             spans
         };
 
@@ -384,6 +448,7 @@ impl HistoryCell for SessionHeaderHistoryCell {
 
         let mut lines = vec![
             make_row(title_spans),
+            make_row(tagline_spans),
             make_row(Vec::new()),
             make_row(model_spans),
             make_row(dir_spans),

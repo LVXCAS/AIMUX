@@ -1524,7 +1524,7 @@ fn session_header_includes_reasoning_level_when_present() {
         .find(|line| line.contains("model:"))
         .expect("model line");
 
-    assert!(model_line.contains("gpt-4o high   fast"));
+    assert!(model_line.contains("gpt-4o  (high)   fast"));
     assert!(model_line.contains("/model to change"));
 }
 
@@ -1544,7 +1544,7 @@ fn session_header_hides_fast_status_when_disabled() {
         .find(|line| line.contains("model:"))
         .expect("model line");
 
-    assert!(model_line.contains("gpt-4o high"));
+    assert!(model_line.contains("gpt-4o  (high)"));
     assert!(!model_line.contains("fast"));
 }
 

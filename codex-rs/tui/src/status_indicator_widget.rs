@@ -252,13 +252,17 @@ impl Renderable for StatusIndicatorWidget {
         let pretty_elapsed = fmt_elapsed_compact(elapsed_duration.as_secs());
         let motion_mode = MotionMode::from_animations_enabled(self.animations_enabled);
 
-        let mut spans = Vec::with_capacity(5);
+        let brand_accent = crate::style::brand_accent();
+        let mut spans = Vec::with_capacity(6);
+        // Brand glyph prefixes the status row: `» Working (…)`.
+        spans.push(Span::styled("» ", ratatui::style::Style::default().fg(brand_accent)));
         if let Some(indicator) = activity_indicator(
             Some(self.last_resume_at),
             motion_mode,
             ReducedMotionIndicator::Hidden,
         ) {
-            spans.push(indicator);
+            // Recolor the moving Braille bullet to the brand accent.
+            spans.push(indicator.fg(brand_accent));
             spans.push(" ".into());
         }
         spans.extend(shimmer_text(&self.header, motion_mode));
@@ -412,7 +416,7 @@ mod tests {
             .map(ratatui::buffer::Cell::symbol)
             .collect::<String>();
 
-        assert!(line.starts_with("Working (0s • esc to interrupt)"));
+        assert!(line.starts_with("» Working (0s • esc to interrupt)"));
     }
 
     #[test]

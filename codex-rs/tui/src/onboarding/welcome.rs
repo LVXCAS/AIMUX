@@ -3,8 +3,10 @@ use crossterm::event::KeyEventKind;
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::prelude::Widget;
+use ratatui::style::Style;
 use ratatui::style::Stylize;
 use ratatui::text::Line;
+use ratatui::text::Span;
 use ratatui::widgets::Clear;
 use ratatui::widgets::Paragraph;
 use ratatui::widgets::WidgetRef;
@@ -85,17 +87,35 @@ impl WidgetRef for &WelcomeWidget {
             && layout_area.height >= MIN_ANIMATION_HEIGHT
             && layout_area.width >= MIN_ANIMATION_WIDTH;
 
+        let brand_accent = crate::style::brand_accent();
+        let brand_dim = crate::style::brand_dim();
+
         let mut lines: Vec<Line> = Vec::new();
         if show_animation {
             let frame = self.animation.current_frame();
             lines.extend(frame.lines().map(Into::into));
             lines.push("".into());
         }
+
+        // Static AIMUX banner wordmark (rows 1-3 in accent indigo, tagline below).
+        let banner_style = Style::default().fg(brand_accent).bold();
+        for row in [" ╔═╗ ╦ ╔╦╗ ╦ ╦ ╦ ╦", " ╠═╣ ║ ║║║ ║ ║ ╔╩╦╝", " ╩ ╩ ╩ ╩ ╩ ╚═╝ ╩ ╚═"] {
+            lines.push(Line::from(Span::styled(row, banner_style)));
+        }
+        lines.push(Line::from(vec![
+            Span::styled(" »  ", Style::default().fg(brand_accent)),
+            Span::styled(
+                "one agent · any model",
+                Style::default().fg(brand_dim).italic(),
+            ),
+        ]));
+        lines.push("".into());
+
         lines.push(Line::from(vec![
             "  ".into(),
             "Welcome to ".into(),
-            "AIMUX".bold(),
-            ", your AI-powered command-line coding agent".into(),
+            Span::styled("AIMUX", Style::default().fg(brand_accent).bold()),
+            ", your model-agnostic command-line coding agent".into(),
         ]));
 
         Paragraph::new(lines)
@@ -148,8 +168,11 @@ mod tests {
         let frame_lines = widget.animation.current_frame().lines().count() as u16;
         (&widget).render(area, &mut buf);
 
+        // Layout when the animation shows: frame lines, one blank, then the
+        // 3-row banner + tagline + blank (5 lines), then the welcome sentence.
+        const BANNER_BLOCK_LINES: u16 = 5;
         let welcome_row = row_containing(&buf, "Welcome");
-        assert_eq!(welcome_row, Some(frame_lines + 1));
+        assert_eq!(welcome_row, Some(frame_lines + 1 + BANNER_BLOCK_LINES));
     }
 
     #[test]
@@ -163,8 +186,11 @@ mod tests {
         let mut buf = Buffer::empty(area);
         (&widget).render(area, &mut buf);
 
+        // Without the animation, the banner block (5 lines) renders first and
+        // the welcome sentence follows it.
+        const BANNER_BLOCK_LINES: u16 = 5;
         let welcome_row = row_containing(&buf, "Welcome");
-        assert_eq!(welcome_row, Some(0));
+        assert_eq!(welcome_row, Some(BANNER_BLOCK_LINES));
     }
 
     #[test]

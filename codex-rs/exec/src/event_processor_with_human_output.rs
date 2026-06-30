@@ -22,6 +22,7 @@ use crate::event_processor::handle_last_message;
 
 pub(crate) struct EventProcessorWithHumanOutput {
     bold: Style,
+    brand: Style,
     cyan: Style,
     dimmed: Style,
     green: Style,
@@ -47,6 +48,8 @@ impl EventProcessorWithHumanOutput {
         let style = |styled: Style, plain: Style| if with_ansi { styled } else { plain };
         Self {
             bold: style(Style::new().bold(), Style::new()),
+            // AIMUX electric-indigo accent (#7C5CFF) for the brand label.
+            brand: style(Style::new().truecolor(124, 92, 255), Style::new()),
             cyan: style(Style::new().cyan(), Style::new()),
             dimmed: style(Style::new().dimmed(), Style::new()),
             green: style(Style::new().green(), Style::new()),
@@ -98,8 +101,9 @@ impl EventProcessorWithHumanOutput {
         match item {
             ThreadItem::AgentMessage { text, .. } => {
                 eprintln!(
-                    "{}\n{}",
-                    "aimux".style(self.italic).style(self.magenta),
+                    "{} {}\n{}",
+                    "»".style(self.brand).bold(),
+                    "aimux".style(self.italic).style(self.brand),
                     text
                 );
                 self.final_message = Some(text);
@@ -215,7 +219,16 @@ impl EventProcessor for EventProcessorWithHumanOutput {
         session_configured_event: &SessionConfiguredEvent,
     ) {
         const VERSION: &str = env!("CARGO_PKG_VERSION");
-        eprintln!("AIMUX v{VERSION}\n--------");
+        // AIMUX banner wordmark, accent-colored, with an indigo subtitle line.
+        for row in [" ╔═╗ ╦ ╔╦╗ ╦ ╦ ╦ ╦", " ╠═╣ ║ ║║║ ║ ║ ╔╩╦╝", " ╩ ╩ ╩ ╩ ╩ ╚═╝ ╩ ╚═"] {
+            eprintln!("{}", row.style(self.brand).bold());
+        }
+        eprintln!(
+            "{} {}",
+            "»".style(self.brand).bold(),
+            format!("aimux v{VERSION} · one agent, any model").style(self.brand)
+        );
+        eprintln!("--------");
         for (key, value) in config_summary_entries(config, session_configured_event) {
             eprintln!("{} {}", format!("{key}:").style(self.bold), value);
         }
@@ -408,8 +421,9 @@ impl EventProcessor for EventProcessorWithHumanOutput {
         ) && let Some(message) = self.final_message.as_deref()
         {
             eprintln!(
-                "{}\n{}",
-                "aimux".style(self.italic).style(self.magenta),
+                "{} {}\n{}",
+                "»".style(self.brand).bold(),
+                "aimux".style(self.italic).style(self.brand),
                 message
             );
         }

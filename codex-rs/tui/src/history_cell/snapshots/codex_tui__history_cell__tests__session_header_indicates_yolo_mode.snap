@@ -1,9 +1,10 @@
 ---
-source: tui/src/history_cell.rs
+source: tui/src/history_cell/tests.rs
 expression: rendered
 ---
 ╭───────────────────────────────────────╮
-│ >_ OpenAI Codex (vtest)               │
+│ »  A I M U X   vtest                  │
+│    one agent · any model              │
 │                                       │
 │ model:       gpt-5   /model to change │
 │ directory:   /tmp/project             │

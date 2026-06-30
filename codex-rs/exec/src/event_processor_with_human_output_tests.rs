@@ -289,6 +289,7 @@ fn final_message_from_turn_items_falls_back_to_latest_plan() {
 fn turn_completed_recovers_final_message_from_turn_items() {
     let mut processor = EventProcessorWithHumanOutput {
         bold: Style::new(),
+        brand: Style::new(),
         cyan: Style::new(),
         dimmed: Style::new(),
         green: Style::new(),
@@ -337,6 +338,7 @@ fn turn_completed_recovers_final_message_from_turn_items() {
 fn turn_completed_overwrites_stale_final_message_from_turn_items() {
     let mut processor = EventProcessorWithHumanOutput {
         bold: Style::new(),
+        brand: Style::new(),
         cyan: Style::new(),
         dimmed: Style::new(),
         green: Style::new(),
@@ -386,6 +388,7 @@ fn turn_completed_overwrites_stale_final_message_from_turn_items() {
 fn turn_completed_preserves_streamed_final_message_when_turn_items_are_empty() {
     let mut processor = EventProcessorWithHumanOutput {
         bold: Style::new(),
+        brand: Style::new(),
         cyan: Style::new(),
         dimmed: Style::new(),
         green: Style::new(),
@@ -430,6 +433,7 @@ fn turn_completed_preserves_streamed_final_message_when_turn_items_are_empty() {
 fn turn_failed_clears_stale_final_message() {
     let mut processor = EventProcessorWithHumanOutput {
         bold: Style::new(),
+        brand: Style::new(),
         cyan: Style::new(),
         dimmed: Style::new(),
         green: Style::new(),
@@ -475,6 +479,7 @@ fn turn_failed_clears_stale_final_message() {
 fn turn_interrupted_clears_stale_final_message() {
     let mut processor = EventProcessorWithHumanOutput {
         bold: Style::new(),
+        brand: Style::new(),
         cyan: Style::new(),
         dimmed: Style::new(),
         green: Style::new(),

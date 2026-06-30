@@ -167,6 +167,45 @@ impl ChatWidget {
         }
     }
 
+    /// Provider display name and sort order for a model slug. The /model picker
+    /// groups models by provider so the "any model" promise is visible.
+    fn model_provider_group(model: &str) -> (&'static str, usize) {
+        let lower = model.to_ascii_lowercase();
+        if lower.starts_with("claude") || lower.contains("anthropic") {
+            ("Claude", 1)
+        } else if lower.starts_with("gemini") || lower.contains("google") {
+            ("Gemini", 2)
+        } else if lower.starts_with("mistral") || lower.contains("codestral") {
+            ("Mistral", 3)
+        } else if lower.starts_with("gpt")
+            || lower.starts_with("codex")
+            || lower.starts_with("o1")
+            || lower.starts_with("o3")
+            || lower.starts_with("o4")
+            || lower.contains("openai")
+        {
+            ("OpenAI", 0)
+        } else {
+            ("Other", 4)
+        }
+    }
+
+    /// Build a non-selectable `» Provider` divider row styled in dim indigo.
+    fn provider_header_item(provider: &str) -> SelectionItem {
+        let brand_dim = crate::style::brand_dim();
+        SelectionItem {
+            name: String::new(),
+            name_prefix_spans: vec![ratatui::text::Span::styled(
+                format!("» {provider}"),
+                Style::default().fg(brand_dim).bold(),
+            )],
+            // Disabled (but with no disabled_reason) makes this row
+            // non-selectable and unnumbered without a "(disabled)" suffix.
+            is_disabled: true,
+            ..Default::default()
+        }
+    }
+
     pub(crate) fn open_all_models_popup(&mut self, presets: Vec<ModelPreset>) {
         if presets.is_empty() {
             self.add_info_message(
@@ -176,8 +215,23 @@ impl ChatWidget {
             return;
         }
 
+        // Sort by provider group (fixed order), keeping default/recommended
+        // models first within each provider, then insert `» Provider` headers.
+        let mut presets = presets;
+        presets.sort_by_key(|preset| {
+            let (_, order) = Self::model_provider_group(&preset.model);
+            (order, !preset.is_default, preset.model.clone())
+        });
+
         let mut items: Vec<SelectionItem> = Vec::new();
+        let mut current_provider: Option<&'static str> = None;
         for preset in presets.into_iter() {
+            let (provider, _) = Self::model_provider_group(&preset.model);
+            if current_provider != Some(provider) {
+                items.push(Self::provider_header_item(provider));
+                current_provider = Some(provider);
+            }
+
             let description =
                 (!preset.description.is_empty()).then_some(preset.description.to_string());
             let is_current = preset.model.as_str() == self.current_model();
@@ -203,7 +257,7 @@ impl ChatWidget {
 
         let header = self.model_menu_header(
             "Select Model and Effort",
-            "Access legacy models by running codex -m <model_name> or in your config.toml",
+            "Any model, one agent · grouped by provider (» OpenAI · Claude · Gemini · Mistral)",
         );
         self.bottom_pane.show_selection_view(SelectionViewParams {
             footer_hint: Some(self.bottom_pane.standard_popup_hint_line()),
